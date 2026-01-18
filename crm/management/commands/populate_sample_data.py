@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
 import random
-from crm.models import UserProfile, Customer, Lead, FieldVisit, FollowUp
+from crm.models import UserProfile, Customer, Lead, FieldVisit, FollowUp, Task
 
 
 class Command(BaseCommand):
@@ -34,14 +34,56 @@ class Command(BaseCommand):
             default=30,
             help='Number of leads to create',
         )
+        parser.add_argument(
+            '--tasks',
+            type=int,
+            default=25,
+            help='Number of tasks to create',
+        )
+        parser.add_argument(
+            '--admin',
+            action='store_true',
+            help='Create admin user',
+        )
 
     def handle(self, *args, **options):
         num_executives = options['executives']
         num_customers = options['customers']
         num_visits = options['visits']
         num_leads = options['leads']
+        num_tasks = options['tasks']
+        create_admin = options['admin']
 
         self.stdout.write('Creating sample data...')
+        
+        # Create admin user if requested
+        admin_user = None
+        if create_admin:
+            admin_user, created = User.objects.get_or_create(
+                username='admin',
+                defaults={
+                    'email': 'admin@example.com',
+                    'first_name': 'Admin',
+                    'last_name': 'User',
+                    'is_staff': True,
+                    'is_superuser': True,
+                    'is_active': True,
+                }
+            )
+            if created:
+                admin_user.set_password('admin123')
+                admin_user.save()
+                self.stdout.write(self.style.SUCCESS('Created admin user: admin (password: admin123)'))
+            
+            # Ensure admin profile exists
+            admin_profile, _ = UserProfile.objects.get_or_create(
+                user=admin_user,
+                defaults={
+                    'role': 'admin',
+                    'phone': '+1234567890',
+                    'is_active': True,
+                }
+            )
 
         # Create or get sales executives
         executives = []
@@ -163,16 +205,67 @@ class Command(BaseCommand):
                     completed=random.choice([True, False]),
                 )
 
-        self.stdout.write(self.style.SUCCESS(
-            f'\nSuccessfully created:\n'
-            f'- {len(executives)} sales executives\n'
-            f'- {len(customers)} customers\n'
-            f'- {num_visits} field visits\n'
-            f'- {num_leads} leads\n'
-            f'- {min(20, num_leads)} follow-ups\n\n'
-            f'Login credentials for sales executives:\n'
-            f'Username: sales_exec_1, sales_exec_2, sales_exec_3\n'
-            f'Password: password123\n'
+        # Create tasks
+        task_types = ['visit', 'followup', 'lead_contact', 'other']
+        task_priorities = ['low', 'medium', 'high', 'urgent']
+        task_statuses = ['pending', 'in_progress', 'completed', 'cancelled']
+        task_titles = [
+            'Schedule visit with customer', 'Follow up on quotation', 'Contact new lead',
+            'Prepare presentation', 'Send product catalog', 'Schedule demo',
+            'Review contract terms', 'Update customer information', 'Schedule follow-up call',
+            'Prepare proposal', 'Visit potential client', 'Send pricing information'
+        ]
+
+        # Get admin user for assigning tasks
+        admin_for_tasks = admin_user if admin_user else User.objects.filter(is_superuser=True).first()
+        if not admin_for_tasks:
+            admin_for_tasks = executives[0] if executives else None
+
+        for i in range(num_tasks):
+            task_customer = random.choice(customers) if customers else None
+            task_lead = random.choice(list(Lead.objects.all()[:10])) if Lead.objects.exists() else None
+            task_visit = random.choice(list(FieldVisit.objects.all()[:10])) if FieldVisit.objects.exists() else None
+            
+            due_date = timezone.now() + timedelta(days=random.randint(1, 60))
+            task = Task.objects.create(
+                title=random.choice(task_titles),
+                description=f'Task description {i+1}. Complete this task as assigned.',
+                task_type=random.choice(task_types),
+                priority=random.choice(task_priorities),
+                status=random.choice(task_statuses),
+                assigned_to=random.choice(executives) if executives else None,
+                assigned_by=admin_for_tasks,
+                customer=task_customer,
+                company=task_customer.company if task_customer else random.choice(companies) if companies else '',
+                lead=task_lead,
+                field_visit=task_visit if random.choice([True, False]) else None,
+                due_date=due_date,
+            )
+            if i % 10 == 0:
+                self.stdout.write(self.style.SUCCESS(f'Created {i+1} tasks...'))
+
+        summary_lines = [
+            f'\nSuccessfully created:',
+            f'- {len(executives)} sales executives',
+            f'- {len(customers)} customers',
+            f'- {num_visits} field visits',
+            f'- {num_leads} leads',
+            f'- {min(20, num_leads)} follow-ups',
+            f'- {num_tasks} tasks',
+        ]
+        
+        if create_admin and admin_user:
+            summary_lines.append(f'\nAdmin user created:')
+            summary_lines.append(f'Username: admin')
+            summary_lines.append(f'Password: admin123')
+            summary_lines.append(f'Email: admin@example.com')
+        
+        summary_lines.extend([
+            f'\nLogin credentials for sales executives:',
+            f'Username: sales_exec_1, sales_exec_2, sales_exec_3',
+            f'Password: password123',
             f'Email: sales1@example.com, sales2@example.com, sales3@example.com'
-        ))
+        ])
+
+        self.stdout.write(self.style.SUCCESS('\n'.join(summary_lines)))
 

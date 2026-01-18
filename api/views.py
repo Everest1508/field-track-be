@@ -16,7 +16,14 @@ from .serializers import (
 )
 from django_filters.rest_framework import DjangoFilterBackend
 import json
-
+from django.http import HttpResponse
+import csv
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from django.utils.dateparse import parse_date
 
 class CustomerViewSet(viewsets.ModelViewSet):
     """ViewSet for Customer CRUD operations"""
@@ -451,14 +458,8 @@ def performance_report(request):
 @permission_classes([IsAuthenticated])
 def export_reports(request):
     """Export reports as Excel or PDF with custom filters"""
-    from django.http import HttpResponse
-    import csv
-    from io import BytesIO
-    from reportlab.lib.pagesizes import letter
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.lib import colors
-    from django.utils.dateparse import parse_date
+    print("hey"*58)
+
     
     export_format = request.query_params.get('format', 'excel')
     report_type = request.query_params.get('type', 'visits')

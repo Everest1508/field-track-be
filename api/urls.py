@@ -36,14 +36,19 @@ router.register(r'tasks', TaskViewSet, basename='task')
 router_urls = router.urls
 
 urlpatterns = [
-    path('', include(router_urls)),
-    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('auth/me/', get_current_user, name='current_user'),
+    # Reports endpoints (before router to avoid conflicts)
     path('reports/visits/', visit_reports, name='visit_reports'),
     path('reports/performance/', performance_report, name='performance_report'),
     path('reports/export/', export_reports, name='export_reports'),
     path('reports/custom/', custom_reports, name='custom_reports'),
+    # Also support without trailing slash for export
+    path('reports/export', export_reports, name='export_reports_no_slash'),
+    # Router URLs
+    path('', include(router_urls)),
+    # Auth endpoints
+    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/me/', get_current_user, name='current_user'),
     # Admin Dashboard APIs
     path('admin/dashboard/stats/', dashboard_stats, name='admin_dashboard_stats'),
     path('admin/dashboard/visits/', dashboard_visits, name='admin_dashboard_visits'),
