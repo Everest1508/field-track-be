@@ -1,0 +1,300 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_name %}Reports{% endblock %}
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Reports & Analytics</h1>
+<p class="page-subtitle">Generate detailed reports and analyze performance metrics</p>
+
+<!-- Report Filters -->
+<div class="chart-card mb-4">
+    <div class="chart-header">
+        <h3 class="chart-title">Report Options</h3>
+    </div>
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Report Type</label>
+            <select class="form-select" name="type">
+                <option value="daily" {% if report_type == 'daily' %}selected{% endif %}>Daily</option>
+                <option value="weekly" {% if report_type == 'weekly' %}selected{% endif %}>Weekly</option>
+                <option value="monthly" {% if report_type == 'monthly' %}selected{% endif %}>Monthly</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" name="date" value="{{ date|date:'Y-m-d' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">&nbsp;</label>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Generate Report</button>
+                <a href="{% url 'export_report' %}?format=excel&type=visits" class="btn btn-success">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </a>
+                <a href="{% url 'export_report' %}?format=pdf&type=visits" class="btn btn-danger">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h3 class="chart-title">Lead Conversion Funnel</h3>
+                    <p class="chart-subtitle">than last week <span style="color: #52c41a;">+23%</span></p>
+                </div>
+            </div>
+            <div id="funnelChart" style="height: 400px;"></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h3 class="chart-title">Status Distribution</h3>
+                    <p class="chart-subtitle">Lead status breakdown</p>
+                </div>
+            </div>
+            <div id="statusChart" style="height: 400px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Executive Performance -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h3 class="chart-title">Executive Performance</h3>
+                    <p class="chart-subtitle">than last month <span style="color: #52c41a;">+20%</span></p>
+                </div>
+            </div>
+            <div id="performanceChart" style="height: 400px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="table-card">
+            <div class="chart-header">
+                <div>
+                    <h3 class="chart-title">Executive Performance Details</h3>
+                    <p class="chart-subtitle">Performance metrics by executive</p>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-2">ALL</button>
+                    <button class="btn btn-sm btn-outline-secondary">ONLINE</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Executive</th>
+                            <th>Total Visits</th>
+                            <th>Total Leads</th>
+                            <th>Closed Deals</th>
+                            <th>Conversion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for perf in executive_performance %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-right: 12px;">
+                                        {{ perf.user.username|first|upper }}
+                                    </div>
+                                    <strong>{{ perf.user.username }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ perf.total_visits }}</td>
+                            <td>{{ perf.total_leads }}</td>
+                            <td><span class="badge badge-success">{{ perf.closed_deals }}</span></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 8px; background: #f0f0f0;">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ perf.conversion_rate }}%; background: #52c41a;"></div>
+                                    </div>
+                                    <span class="fw-bold" style="min-width: 50px;">{{ perf.conversion_rate }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4" style="color: #8c8c8c;">No data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Visit Details -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="table-card">
+            <div class="chart-header">
+                <div>
+                    <h3 class="chart-title">Visit Details ({{ report_type|title }})</h3>
+                    <p class="chart-subtitle">Detailed visit records</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Executive</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in visits %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-right: 12px;">
+                                        {{ visit.customer.name|first|upper }}
+                                    </div>
+                                    <strong>{{ visit.customer.name }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ visit.visit_date|date:"M d, Y H:i" }}</td>
+                            <td><small>{{ visit.purpose|truncatewords:10 }}</small></td>
+                            <td>
+                                {% if visit.discussion_status %}
+                                <span class="badge badge-info">{{ visit.discussion_status|title }}</span>
+                                {% else %}
+                                <span class="badge" style="background: #f5f5f5; color: #8c8c8c;">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ visit.sales_executive.username|default:"N/A" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4" style="color: #8c8c8c;">No visits found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Lead Conversion Funnel
+    const funnelData = {{ funnel_data }};
+    const funnelOptions = {
+        chart: {
+            type: 'bar',
+            height: 400,
+            toolbar: { show: false },
+        },
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                borderRadius: 8,
+            }
+        },
+        dataLabels: {
+            enabled: true,
+        },
+        series: [{
+            name: 'Leads',
+            data: funnelData.map(item => item.count)
+        }],
+        xaxis: {
+            categories: funnelData.map(item => item.label)
+        },
+        colors: ['#1890ff'],
+        tooltip: {
+            y: { formatter: function(val) { return val + " leads" } }
+        }
+    };
+    new ApexCharts(document.querySelector("#funnelChart"), funnelOptions).render();
+    
+    // Status Distribution Pie Chart
+    const statusOptions = {
+        chart: {
+            type: 'donut',
+            height: 400,
+        },
+        series: funnelData.map(item => item.count),
+        labels: funnelData.map(item => item.label),
+        colors: ['#1890ff', '#52c41a', '#faad14', '#ff4d4f', '#722ed1', '#eb2f96'],
+        legend: { position: 'bottom' },
+        plotOptions: {
+            pie: {
+                donut: { size: '70%' }
+            }
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function(val) {
+                return val.toFixed(1) + "%";
+            }
+        }
+    };
+    new ApexCharts(document.querySelector("#statusChart"), statusOptions).render();
+    
+    // Executive Performance Chart
+    const performanceData = {{ executive_performance_json }};
+    const performanceOptions = {
+        chart: {
+            type: 'bar',
+            height: 400,
+            toolbar: { show: false },
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '55%',
+                borderRadius: 8,
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        series: [
+            {
+                name: 'Visits',
+                data: performanceData.map(p => p.total_visits)
+            },
+            {
+                name: 'Leads',
+                data: performanceData.map(p => p.total_leads)
+            },
+            {
+                name: 'Closed Deals',
+                data: performanceData.map(p => p.closed_deals)
+            }
+        ],
+        xaxis: {
+            categories: performanceData.map(p => p.user.username)
+        },
+        colors: ['#1890ff', '#52c41a', '#faad14'],
+        legend: { position: 'top' },
+        tooltip: {
+            y: { formatter: function(val) { return val } }
+        }
+    };
+    new ApexCharts(document.querySelector("#performanceChart"), performanceOptions).render();
+</script>
+{% endblock %}

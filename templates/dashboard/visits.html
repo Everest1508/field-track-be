@@ -1,0 +1,120 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_name %}Field Visits{% endblock %}
+{% block page_title %}Field Visits{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Field Visits</h1>
+<p class="page-subtitle">Monitor and track all field visit activities</p>
+
+<!-- Filters -->
+<div class="chart-card mb-4">
+    <div class="chart-header">
+        <h3 class="chart-title">Filters</h3>
+    </div>
+    <form method="get" class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label">Date From</label>
+            <input type="date" class="form-control" name="date_from" value="{{ filters.date_from }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Date To</label>
+            <input type="date" class="form-control" name="date_to" value="{{ filters.date_to }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Sales Executive</label>
+            <select class="form-select" name="executive">
+                <option value="">All</option>
+                {% for exec in executives %}
+                <option value="{{ exec.id }}" {% if filters.executive == exec.id|stringformat:"s" %}selected{% endif %}>
+                    {{ exec.username }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Customer</label>
+            <select class="form-select" name="customer">
+                <option value="">All</option>
+                {% for customer in customers %}
+                <option value="{{ customer.id }}" {% if filters.customer == customer.id|stringformat:"s" %}selected{% endif %}>
+                    {{ customer.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+            <a href="{% url 'visits_view' %}" class="btn btn-outline-secondary">Clear</a>
+            <a href="{% url 'export_report' %}?format=excel&type=visits" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Export Excel
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Visits Table -->
+<div class="table-card">
+    <div class="chart-header">
+        <div>
+            <h3 class="chart-title">Visit Records</h3>
+            <p class="chart-subtitle">{{ visits|length }} total visits</p>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-primary me-2">ALL</button>
+            <button class="btn btn-sm btn-outline-secondary">ONLINE</button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Visit Date</th>
+                    <th>Purpose</th>
+                    <th>Status</th>
+                    <th>Sales Executive</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visit in visits %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-right: 12px;">
+                                {{ visit.customer.name|first|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ visit.customer.name }}</strong>
+                                {% if visit.customer.company %}
+                                <br><small style="color: #8c8c8c;">{{ visit.customer.company }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {{ visit.visit_date|date:"M d, Y" }}<br>
+                        <small style="color: #8c8c8c;">{{ visit.visit_date|date:"h:i A" }}</small>
+                    </td>
+                    <td><small>{{ visit.purpose|truncatewords:10 }}</small></td>
+                    <td>
+                        {% if visit.discussion_status %}
+                        <span class="badge badge-info">{{ visit.discussion_status|title }}</span>
+                        {% else %}
+                        <span class="badge" style="background: #f5f5f5; color: #8c8c8c;">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ visit.sales_executive.username|default:"N/A" }}</td>
+                    <td><small>{{ visit.notes|truncatewords:5|default:"-" }}</small></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4" style="color: #8c8c8c;">No visits found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

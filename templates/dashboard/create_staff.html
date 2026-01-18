@@ -1,0 +1,50 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_name %}Create Staff{% endblock %}
+{% block page_title %}Create Staff{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Create New Sales Executive</h1>
+<p class="page-subtitle">Add a new sales executive to the system</p>
+
+<div class="chart-card">
+    <div class="chart-header">
+        <h3 class="chart-title">Staff Information</h3>
+    </div>
+    <form method="post" class="p-4">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Username *</label>
+                <input type="text" class="form-control" name="username" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Password *</label>
+                <input type="password" class="form-control" name="password" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-control" name="first_name">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-control" name="last_name">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Phone</label>
+                <input type="text" class="form-control" name="phone">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Create Staff Member
+                </button>
+                <a href="{% url 'staff_view' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

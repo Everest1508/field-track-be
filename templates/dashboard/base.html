@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Field Service CRM - Admin Dashboard{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #1890FF;
+            --secondary: #B37FEB;
+            --success: #52C41A;
+            --warning: #FADB14;
+            --danger: #F5222D;
+            --gray-1: #FFFFFF;
+            --gray-2: #FAFAFA;
+            --gray-3: #F5F5F5;
+            --gray-4: #F0F0F0;
+            --gray-5: #D9D9D9;
+            --gray-6: #BFBFBF;
+            --gray-7: #8C8C8C;
+            --gray-10: #262626;
+            --gray-12: #141414;
+            --shadow-1: 0px 20px 27px rgba(0, 0, 0, 0.05);
+            --shadow-2: 0px 4px 6px rgba(0, 0, 0, 0.12);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-3);
+            color: var(--gray-12);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .layout-dashboard {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Sidebar */
+        .sider-primary {
+            width: 250px;
+            position: fixed;
+            left: 0;
+            z-index: 99;
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--gray-1) !important;
+            padding: 13px 20px;
+            box-shadow: var(--shadow-1);
+        }
+        
+        @media (min-width: 992px) {
+            .sider-primary {
+                margin: 20px 0 0 20px;
+                height: calc(100vh - 20px);
+                border-radius: 8px;
+                background: transparent !important;
+            }
+        }
+        
+        .brand {
+            font-weight: 600;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        
+        .brand img {
+            height: 30px;
+        }
+        
+        .brand span {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-12);
+        }
+        
+        .sider-primary hr {
+            margin: 18px 0;
+            border: none;
+            height: 1px;
+            background-color: var(--gray-4);
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .nav-item {
+            margin: 0;
+        }
+        
+        .nav-link {
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--gray-12);
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+        
+        .nav-link:hover {
+            background: var(--gray-2);
+        }
+        
+        .nav-link.active {
+            background: var(--gray-1);
+            box-shadow: var(--shadow-1);
+        }
+        
+        .nav-link.active .icon {
+            background-color: var(--primary);
+        }
+        
+        .nav-link.active .icon svg path {
+            fill: var(--gray-1);
+        }
+        
+        .nav-link.active .label {
+            font-weight: 600;
+        }
+        
+        .nav-link .icon {
+            display: inline-flex;
+            width: 32px;
+            height: 32px;
+            background-color: var(--gray-2);
+            box-shadow: var(--shadow-2);
+            border-radius: 6px;
+            justify-content: center;
+            align-items: center;
+            margin-right: 11px;
+        }
+        
+        .nav-link .icon svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .nav-link .icon svg path {
+            fill: var(--gray-6);
+        }
+        
+        .nav-link .label {
+            vertical-align: middle;
+        }
+        
+        .menu-item-header {
+            padding: 10px 16px !important;
+            color: var(--gray-7);
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-top: 16px;
+        }
+        
+        .aside-footer {
+            padding-top: 100px;
+            padding-bottom: 20px;
+        }
+        
+        .footer-box {
+            background-color: var(--gray-1);
+            color: var(--gray-12);
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-1);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .footer-box .icon {
+            display: inline-flex;
+            width: 32px;
+            height: 32px;
+            box-shadow: var(--shadow-2);
+            border-radius: 6px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            background-color: var(--primary);
+        }
+        
+        .footer-box .icon svg path {
+            fill: var(--gray-1);
+        }
+        
+        .footer-box h6 {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--gray-12);
+            margin-bottom: 4px;
+        }
+        
+        .footer-box p {
+            color: var(--gray-7);
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .footer-box .btn {
+            width: 100%;
+            background: var(--gray-12);
+            color: var(--gray-1);
+            border: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+        
+        .upgrade-btn {
+            width: 100%;
+            background: var(--primary);
+            color: var(--gray-1);
+            border: none;
+            font-weight: 600;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        
+        /* Main Content */
+        .main-layout {
+            background: transparent;
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            flex-shrink: 0;
+        }
+        
+        @media (min-width: 992px) {
+            .main-layout {
+                width: auto;
+                flex-shrink: 1;
+                margin-left: 270px;
+            }
+        }
+        
+        /* Header */
+        .ant-layout-header {
+            background: transparent;
+            height: auto;
+            padding: 16px;
+            margin: 10px 4px;
+            border-radius: 12px;
+        }
+        
+        @media (min-width: 768px) {
+            .ant-layout-header {
+                margin: 10px 20px;
+            }
+        }
+        
+        .header-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+        
+        .header-breadcrumb {
+            flex: 0 0 100%;
+            min-width: 200px;
+        }
+        
+        @media (min-width: 768px) {
+            .header-breadcrumb {
+                flex: 0 0 25%;
+            }
+        }
+        
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .breadcrumb-nav a {
+            color: var(--gray-7);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-nav .current {
+            color: var(--gray-12);
+            font-weight: 700;
+        }
+        
+        .page-header-heading {
+            margin-top: 0;
+        }
+        
+        .page-header-heading-title {
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 20px;
+            margin-top: 5px;
+        }
+        
+        .header-control {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            margin-top: 10px;
+            gap: 0;
+            flex: 0 0 100%;
+        }
+        
+        @media (min-width: 768px) {
+            .header-control {
+                margin-top: 0;
+                flex-direction: row;
+                justify-content: flex-end;
+                flex: 0 0 75%;
+            }
+        }
+        
+        .header-search {
+            width: 200px;
+            position: relative;
+            margin: 0 7px;
+        }
+        
+        .header-search input {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            border: 1px solid var(--gray-5);
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--gray-7);
+            background: var(--gray-1);
+        }
+        
+        .header-search input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .header-search input::placeholder {
+            color: var(--gray-7);
+        }
+        
+        .header-search .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        
+        .header-btn {
+            height: auto;
+            padding: 0 7px;
+            margin: 0;
+            box-shadow: none;
+            color: var(--gray-7);
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-btn svg {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+        }
+        
+        .header-btn svg path {
+            fill: var(--gray-12);
+        }
+        
+        .btn-sign-in {
+            height: auto;
+            padding: 0 7px;
+            margin: 0;
+            box-shadow: none;
+            color: var(--gray-7);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn-sign-in svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 4px;
+        }
+        
+        .btn-sign-in span {
+            font-weight: 600;
+            vertical-align: middle;
+            display: none;
+        }
+        
+        @media (min-width: 768px) {
+            .btn-sign-in span {
+                display: inline;
+            }
+        }
+        
+        .badge-notification {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--danger);
+            color: white;
+            border-radius: 10px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Content */
+        .ant-layout-content {
+            padding: 0;
+            margin: 0 20px;
+        }
+        
+        /* Cards */
+        .ant-card {
+            border-radius: 12px;
+            box-shadow: var(--shadow-1);
+            border: none;
+            background: var(--gray-1);
+        }
+        
+        .ant-card-body {
+            padding: 16px;
+        }
+        
+        .ant-card-head {
+            border-bottom: 1px solid var(--gray-4);
+            padding: 16px;
+            min-height: 72px;
+        }
+        
+        .ant-card-head-title h6 {
+            margin-bottom: 0;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .ant-card-head-title p {
+            font-weight: 600;
+            color: var(--gray-7);
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+        
+        /* Widget Counter */
+        .widget-1 {
+            position: relative;
+        }
+        
+        .widget-1 .icon {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, #0050b3 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .widget-1 .icon svg {
+            width: 22px;
+            height: 22px;
+        }
+        
+        .widget-1 .icon svg path {
+            fill: var(--gray-1);
+        }
+        
+        .ant-statistic-title {
+            font-size: 13px;
+            color: var(--gray-7);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .ant-statistic-content {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gray-12);
+        }
+        
+        .ant-statistic-content-suffix {
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .text-success {
+            color: var(--success) !important;
+        }
+        
+        .text-danger {
+            color: var(--danger) !important;
+        }
+        
+        /* Tables */
+        .ant-table {
+            background: var(--gray-1);
+        }
+        
+        .ant-table thead th {
+            background: var(--gray-2);
+            border-bottom: 2px solid var(--gray-4);
+            font-weight: 600;
+            color: var(--gray-7);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 16px;
+        }
+        
+        .ant-table tbody td {
+            border-bottom: 1px solid var(--gray-4);
+            padding: 16px;
+        }
+        
+        .ant-table tbody tr:hover {
+            background: var(--gray-2);
+        }
+        
+        /* Badges */
+        .ant-tag {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            border: none;
+        }
+        
+        .ant-tag-success {
+            background: #f6ffed;
+            color: var(--success);
+            border: 1px solid #b7eb8f;
+        }
+        
+        .ant-tag-warning {
+            background: #fffbe6;
+            color: var(--warning);
+            border: 1px solid #ffe58f;
+        }
+        
+        .ant-tag-error {
+            background: #fff1f0;
+            color: var(--danger);
+            border: 1px solid #ffccc7;
+        }
+        
+        .ant-tag-info {
+            background: #e6f7ff;
+            color: var(--primary);
+            border: 1px solid #91d5ff;
+        }
+        
+        /* Buttons */
+        .ant-btn {
+            height: 40px;
+            padding: 0 15px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            border: none;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.07);
+        }
+        
+        .ant-btn-primary {
+            background: var(--primary);
+            color: var(--gray-1);
+        }
+        
+        .ant-btn-primary:hover {
+            background: #0050b3;
+            color: var(--gray-1);
+        }
+        
+        /* Form Controls */
+        .ant-input, .ant-select-selector {
+            height: 40px;
+            border-radius: 6px;
+            border: 1px solid var(--gray-5);
+            padding: 0 12px;
+        }
+        
+        .ant-input:focus, .ant-select-focused .ant-select-selector {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+        
+        /* Responsive */
+        @media (max-width: 991px) {
+            .sider-primary {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+                position: fixed;
+                z-index: 999;
+            }
+            
+            .sider-primary.show {
+                transform: translateX(0);
+            }
+            
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: var(--gray-12);
+                opacity: 0.5;
+                z-index: 9;
+                display: none;
+            }
+            
+            .sider-primary.show ~ .sidebar-overlay {
+                display: block;
+            }
+            
+            .main-layout {
+                margin-left: 0;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar-toggler {
+                display: none !important;
+            }
+        }
+        
+        .mb-24 {
+            margin-bottom: 24px;
+        }
+        
+        .g-4 {
+            gap: 1.5rem;
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -12px;
+        }
+        
+        .col-24 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding: 0 12px;
+        }
+        
+        @media (min-width: 992px) {
+            .col-lg-10 {
+                flex: 0 0 41.666667%;
+                max-width: 41.666667%;
+            }
+            .col-lg-12 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+            .col-lg-14 {
+                flex: 0 0 58.333333%;
+                max-width: 58.333333%;
+            }
+            .col-lg-16 {
+                flex: 0 0 66.666667%;
+                max-width: 66.666667%;
+            }
+            .col-lg-8 {
+                flex: 0 0 33.333333%;
+                max-width: 33.333333%;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .col-xl-6 {
+                flex: 0 0 25%;
+                max-width: 25%;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="layout-dashboard">
+        {% if user.is_authenticated %}
+        <!-- Sidebar -->
+        <aside class="sider-primary" id="sidebar">
+            <div class="brand">
+                <div style="width: 32px; height: 32px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                    <i class="bi bi-briefcase-fill"></i>
+                </div>
+                <span>Muse Dashboard</span>
+            </div>
+            <hr>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_home' %}active{% endif %}" href="{% url 'dashboard_home' %}">
+                        <span class="icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 4C3 3.44772 3.44772 3 4 3H16C16.5523 3 17 3.44772 17 4V6C17 6.55228 16.5523 7 16 7H4C3.44772 7 3 6.55228 3 6V4Z" fill="#111827"/>
+                                <path d="M3 10C3 9.44771 3.44772 9 4 9H10C10.5523 9 11 9.44771 11 10V16C11 16.5523 10.5523 17 10 17H4C3.44772 17 3 16.5523 3 16V10Z" fill="#111827"/>
+                                <path d="M14 9C13.4477 9 13 9.44771 13 10V16C13 16.5523 13.4477 17 14 17H16C16.5523 17 17 16.5523 17 16V10C17 9.44771 16.5523 9 16 9H14Z" fill="#111827"/>
+                            </svg>
+                        </span>
+                        <span class="label">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'visits_view' %}active{% endif %}" href="{% url 'visits_view' %}">
+                        <span class="icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M6 2C5.44772 2 5 2.44772 5 3V4H4C2.89543 4 2 4.89543 2 6V16C2 17.1046 2.89543 18 4 18H16C17.1046 18 18 17.1046 18 16V6C18 4.89543 17.1046 4 16 4H15V3C15 2.44772 14.5523 2 14 2C13.4477 2 13 2.44772 13 3V4H7V3C7 2.44772 6.55228 2 6 2Z" fill="#111827"/>
+                            </svg>
+                        </span>
+                        <span class="label">Tables</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'leads_view' %}active{% endif %}" href="{% url 'leads_view' %}">
+                        <span class="icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 4C2.89543 4 2 4.89543 2 6V7H18V6C18 4.89543 17.1046 4 16 4H4Z" fill="#111827"/>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18 9H2V14C2 15.1046 2.89543 16 4 16H16C17.1046 16 18 15.1046 18 14V9ZM4 13C4 12.4477 4.44772 12 5 12H6C6.55228 12 7 12.4477 7 13C7 13.5523 6.55228 14 6 14H5C4.44772 14 4 13.5523 4 13ZM9 12C8.44772 12 8 12.4477 8 13C8 13.5523 8.44772 14 9 14H10C10.5523 14 11 13.5523 11 13C11 12.4477 10.5523 12 10 12H9Z" fill="#111827"/>
+                            </svg>
+                        </span>
+                        <span class="label">Billing</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'reports_view' %}active{% endif %}" href="{% url 'reports_view' %}">
+                        <span class="icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M3 6C3 4.34315 4.34315 3 6 3H16C16.3788 3 16.725 3.214 16.8944 3.55279C17.0638 3.89157 17.0273 4.29698 16.8 4.6L14.25 8L16.8 11.4C17.0273 11.703 17.0638 12.1084 16.8944 12.4472C16.725 12.786 16.3788 13 16 13H6C5.44772 13 5 13.4477 5 14V17C5 17.5523 4.55228 18 4 18C3.44772 18 3 17.5523 3 17V6Z" fill="#111827"/>
+                            </svg>
+                        </span>
+                        <span class="label">RTL</span>
+                    </a>
+                </li>
+                <li class="menu-item-header">Account Pages</li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'staff_view' %}active{% endif %}" href="{% url 'staff_view' %}">
+                        <span class="icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10ZM12 7C12 8.10457 11.1046 9 10 9C8.89543 9 8 8.10457 8 7C8 5.89543 8.89543 5 10 5C11.1046 5 12 5.89543 12 7ZM9.99993 11C7.98239 11 6.24394 12.195 5.45374 13.9157C6.55403 15.192 8.18265 16 9.99998 16C11.8173 16 13.4459 15.1921 14.5462 13.9158C13.756 12.195 12.0175 11 9.99993 11Z" fill="#111827"/>
+                            </svg>
+                        </span>
+                        <span class="label">Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard_logout' %}">
+                        <span class="icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M6 2C5.44772 2 5 2.44772 5 3V4H4C2.89543 4 2 4.89543 2 6V16C2 17.1046 2.89543 18 4 18H16C17.1046 18 18 17.1046 18 16V6C18 4.89543 17.1046 4 16 4H15V3C15 2.44772 14.5523 2 14 2C13.4477 2 13 2.44772 13 3V4H7V3C7 2.44772 6.55228 2 6 2Z" fill="#111827"/>
+                            </svg>
+                        </span>
+                        <span class="label">Sign In</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="aside-footer">
+                <div class="footer-box">
+                    <div class="icon">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 4C3 3.44772 3.44772 3 4 3H16C16.5523 3 17 3.44772 17 4V6C17 6.55228 16.5523 7 16 7H4C3.44772 7 3 6.55228 3 6V4Z" fill="#111827"/>
+                            <path d="M3 10C3 9.44771 3.44772 9 4 9H10C10.5523 9 11 9.44771 11 10V16C11 16.5523 10.5523 17 10 17H4C3.44772 17 3 16.5523 3 16V10Z" fill="#111827"/>
+                            <path d="M14 9C13.4477 9 13 9.44771 13 10V16C13 16.5523 13.4477 17 14 17H16C16.5523 17 17 16.5523 17 16V10C17 9.44771 16.5523 9 16 9H14Z" fill="#111827"/>
+                        </svg>
+                    </div>
+                    <h6>Need Help?</h6>
+                    <p>Please check our docs</p>
+                    <button class="btn">DOCUMENTATION</button>
+                </div>
+            </div>
+            
+            <button class="upgrade-btn">UPGRADE TO PRO</button>
+        </aside>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        {% endif %}
+        
+        <!-- Main Layout -->
+        <div class="main-layout">
+            {% if user.is_authenticated %}
+            <!-- Header -->
+            <header class="ant-layout-header">
+                <div class="header-row">
+                    <!-- Left Side: Breadcrumb & Title -->
+                    <div class="header-breadcrumb">
+                        <div class="breadcrumb-nav">
+                            <a href="{% url 'dashboard_home' %}">Pages</a>
+                            <span>/</span>
+                            <span class="current">{% block page_name %}Dashboard{% endblock %}</span>
+                        </div>
+                        <div class="page-header-heading">
+                            <div class="page-header-heading-title">{% block page_title %}Dashboard{% endblock %}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side: Controls -->
+                    <div class="header-control">
+                        <!-- Search Input -->
+                        <div class="header-search">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" class="search-icon">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8 4C5.79086 4 4 5.79086 4 8C4 10.2091 5.79086 12 8 12C10.2091 12 12 10.2091 12 8C12 5.79086 10.2091 4 8 4ZM2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8C14 9.29583 13.5892 10.4957 12.8907 11.4765L17.7071 16.2929C18.0976 16.6834 18.0976 17.3166 17.7071 17.7071C17.3166 18.0976 16.6834 18.0976 16.2929 17.7071L11.4765 12.8907C10.4957 13.5892 9.29583 14 8 14C4.68629 14 2 11.3137 2 8Z" fill="#8C8C8C"/>
+                            </svg>
+                            <input type="text" placeholder="Type here…" id="globalSearch">
+                        </div>
+                        
+                        <!-- Sign In Button -->
+                        <a href="{% url 'dashboard_logout' %}" class="btn-sign-in">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10ZM12 7C12 8.10457 11.1046 9 10 9C8.89543 9 8 8.10457 8 7C8 5.89543 8.89543 5 10 5C11.1046 5 12 5.89543 12 7ZM9.99993 11C7.98239 11 6.24394 12.195 5.45374 13.9157C6.55403 15.192 8.18265 16 9.99998 16C11.8173 16 13.4459 15.1921 14.5462 13.9158C13.756 12.195 12.0175 11 9.99993 11Z" fill="#111827"/>
+                            </svg>
+                            <span>Sign In</span>
+                        </a>
+                        
+                        <!-- Settings Button -->
+                        <button class="header-btn" title="Settings">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M11.4892 3.17094C11.1102 1.60969 8.8898 1.60969 8.51078 3.17094C8.26594 4.17949 7.11045 4.65811 6.22416 4.11809C4.85218 3.28212 3.28212 4.85218 4.11809 6.22416C4.65811 7.11045 4.17949 8.26593 3.17094 8.51078C1.60969 8.8898 1.60969 11.1102 3.17094 11.4892C4.17949 11.7341 4.65811 12.8896 4.11809 13.7758C3.28212 15.1478 4.85218 16.7179 6.22417 15.8819C7.11045 15.3419 8.26594 15.8205 8.51078 16.8291C8.8898 18.3903 11.1102 18.3903 11.4892 16.8291C11.7341 15.8205 12.8896 15.3419 13.7758 15.8819C15.1478 16.7179 16.7179 15.1478 15.8819 13.7758C15.3419 12.8896 15.8205 11.7341 16.8291 11.4892C18.3903 11.1102 18.3903 8.8898 16.8291 8.51078C15.8205 8.26593 15.3419 7.11045 15.8819 6.22416C16.7179 4.85218 15.1478 3.28212 13.7758 4.11809C12.8896 4.65811 11.7341 4.17949 11.4892 3.17094ZM10 13C11.6569 13 13 11.6569 13 10C13 8.34315 11.6569 7 10 7C8.34315 7 7 8.34315 7 10C7 11.6569 8.34315 13 10 13Z" fill="#111827"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- Notifications Button -->
+                        <button class="header-btn" title="Notifications" style="position: relative;">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 2C6.68632 2 4.00003 4.68629 4.00003 8V11.5858L3.29292 12.2929C3.00692 12.5789 2.92137 13.009 3.07615 13.3827C3.23093 13.7564 3.59557 14 4.00003 14H16C16.4045 14 16.7691 13.7564 16.9239 13.3827C17.0787 13.009 16.9931 12.5789 16.7071 12.2929L16 11.5858V8C16 4.68629 13.3137 2 10 2Z" fill="#111827"/>
+                                <path d="M10 18C8.34315 18 7 16.6569 7 15H13C13 16.6569 11.6569 18 10 18Z" fill="#111827"/>
+                            </svg>
+                            <span class="badge-notification">4</span>
+                        </button>
+                        
+                        <!-- Sidebar Toggler (Mobile Only) -->
+                        <button class="header-btn sidebar-toggler" onclick="toggleSidebar()">
+                            <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            {% endif %}
+            
+            <!-- Content -->
+            <div class="ant-layout-content">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        }
+        
+        // Close sidebar when clicking overlay
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (overlay && e.target === overlay) {
+                sidebar.classList.remove('show');
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

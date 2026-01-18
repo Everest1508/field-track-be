@@ -1,0 +1,79 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_name %}Staff Management{% endblock %}
+{% block page_title %}Staff Management{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Staff Management</h1>
+<p class="page-subtitle">Manage sales executive accounts and permissions</p>
+
+<div class="mb-4">
+    <a href="{% url 'create_staff' %}" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Create New Sales Executive
+    </a>
+</div>
+
+<div class="table-card">
+    <div class="chart-header">
+        <div>
+            <h3 class="chart-title">Sales Executives</h3>
+            <p class="chart-subtitle">Manage your team members</p>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-primary me-2">ALL</button>
+            <button class="btn btn-sm btn-outline-secondary">ONLINE</button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in staff %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #722ed1 0%, #531dab 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-right: 12px;">
+                                {{ profile.user.username|first|upper }}
+                            </div>
+                            <strong>{{ profile.user.username }}</strong>
+                        </div>
+                    </td>
+                    <td>{{ profile.user.get_full_name|default:"-" }}</td>
+                    <td>{{ profile.user.email|default:"-" }}</td>
+                    <td>{{ profile.phone|default:"-" }}</td>
+                    <td>
+                        {% if profile.is_active %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-error">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'toggle_staff_status' profile.user.id %}" class="btn btn-sm btn-warning">
+                            {% if profile.is_active %}
+                            <i class="bi bi-x-circle"></i> Deactivate
+                            {% else %}
+                            <i class="bi bi-check-circle"></i> Activate
+                            {% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4" style="color: #8c8c8c;">No staff members found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

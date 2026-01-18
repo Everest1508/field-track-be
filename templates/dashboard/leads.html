@@ -1,0 +1,119 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_name %}Leads{% endblock %}
+{% block page_title %}Leads{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Leads Management</h1>
+<p class="page-subtitle">Track and manage all leads and their conversion status</p>
+
+{% if stalled_leads > 0 %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <strong>Stalled Leads:</strong> {{ stalled_leads }} leads with no activity in the last 30 days
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="chart-card mb-4">
+    <div class="chart-header">
+        <h3 class="chart-title">Filters</h3>
+    </div>
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+                {% for status_code, status_label in status_choices %}
+                <option value="{{ status_code }}" {% if filters.status == status_code %}selected{% endif %}>
+                    {{ status_label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Sales Executive</label>
+            <select class="form-select" name="executive">
+                <option value="">All</option>
+                {% for exec in executives %}
+                <option value="{{ exec.id }}" {% if filters.executive == exec.id|stringformat:"s" %}selected{% endif %}>
+                    {{ exec.username }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">&nbsp;</label>
+            <div>
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{% url 'leads_view' %}" class="btn btn-outline-secondary">Clear</a>
+                <a href="{% url 'export_report' %}?format=excel&type=leads" class="btn btn-success">
+                    <i class="bi bi-file-earmark-excel"></i> Export
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Leads Table -->
+<div class="table-card">
+    <div class="chart-header">
+        <div>
+            <h3 class="chart-title">All Leads</h3>
+            <p class="chart-subtitle">{{ leads|length }} total leads</p>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-primary me-2">ALL</button>
+            <button class="btn btn-sm btn-outline-secondary">ONLINE</button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Company</th>
+                    <th>Status</th>
+                    <th>Sales Executive</th>
+                    <th>Created Date</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-right: 12px;">
+                                {{ lead.customer.name|first|upper }}
+                            </div>
+                            <strong>{{ lead.customer.name }}</strong>
+                        </div>
+                    </td>
+                    <td>{{ lead.customer.company|default:"-" }}</td>
+                    <td>
+                        {% if lead.status == 'deal_closed' %}
+                        <span class="badge badge-success">{{ lead.get_status_display }}</span>
+                        {% elif lead.status == 'not_interested' %}
+                        <span class="badge badge-error">{{ lead.get_status_display }}</span>
+                        {% elif lead.status == 'negotiation_ongoing' %}
+                        <span class="badge badge-warning">{{ lead.get_status_display }}</span>
+                        {% else %}
+                        <span class="badge badge-info">{{ lead.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ lead.sales_executive.username|default:"N/A" }}</td>
+                    <td>{{ lead.created_at|date:"M d, Y" }}</td>
+                    <td>{{ lead.updated_at|date:"M d, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4" style="color: #8c8c8c;">No leads found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
